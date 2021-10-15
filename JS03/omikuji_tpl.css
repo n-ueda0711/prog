@@ -1,0 +1,53 @@
+body {
+        background-image: url("japanese-paper25-p.jpg");
+        background-repeat: repeat;
+        text-align: center;
+
+    }
+
+    h1 {
+        text-shadow: 1px 1px 0 #fff, 2px 2px 0 #000;
+    }
+
+    .wrap {
+        height: 700px;
+        background-image: url("jinjya.png");
+        background-size: 600px;
+        background-repeat: no-repeat;
+        background-position: center;
+    }
+
+    /*背景画像を透過*/
+    .wrap_rgba {
+        background: rgba(255, 255, 255, 0.5);
+        position: relative;
+        height: 100%;
+    }
+
+    .contents {
+        position: absolute;
+        left: 0;
+        right: 0;
+        margin: auto;
+    }
+
+    .omikuji_img {
+        margin-top: 30px;
+    }
+
+    button {
+        margin-top: 30px;
+        margin-bottom: 30px;
+        display: inline-block;
+        padding: 10px 60px;
+        color: #fff;
+        background-color: #402021;
+        text-shadow: 1px 1px 6px #efebeb;
+        border: 6px groove #93786e;
+
+        transition: .4s;
+    }
+
+    button:hover {
+        background: #8c797a;
+    }
