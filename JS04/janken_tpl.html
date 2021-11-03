@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
+  <script src="js/jquery-2.1.3.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DotGothic16&display=swap" rel="stylesheet">
+
+  <title>じゃんけん</title>
+
+  <style>
+    body {
+      font-family: 'DotGothic16', sans-serif;
+      /*字間の調節*/
+      letter-spacing: 0.2em;
+      color: #00102b;
+      margin: auto;
+    }
+
+    .title {
+      text-align: center;
+      margin: 0 auto;
+      height: 40px;
+      width: auto;
+      padding-top: 15px;
+      padding-bottom: 30px;
+      background: rgba(255, 6, 98, 0.8);
+      font-size: 34px;
+      text-shadow: 1px 2px 0px rgba(0, 0, 0, 0.3);
+      box-shadow: 0 12px 15px -6px rgb(174, 152, 160);
+    }
+
+    .wrap {
+      text-align: center;
+      background: #f6f4f4;
+      width: 1000px;
+      height: 800px;
+      margin: 0 auto;
+      position: relative;
+      box-shadow: 0 0 5px 5px rgba(0, 0, 0, .1) inset;
+    }
+
+    /*バトルゾーン*/
+    .battle {
+      position: absolute;
+      text-align: center;
+      margin-top: 40px;
+      margin-right: auto;
+      margin-left: auto;
+      left: 210px;
+    }
+
+    .battle div {
+      color: #ffffff;
+    }
+
+    /*全体*/
+    .battle_hand {
+      position: absolute;
+      width: 800px;
+      height: 200px;
+      display: flex;
+      top: 10%;
+      left: 40px;
+    }
+
+    .battle_hand div {
+      width: 250px;
+      height: 200px;
+    }
+
+    /*文字+画像*/
+    .battle_hand_contents {
+      width: 250px;
+      margin-bottom: 100px;
+    }
+
+    /*画像*/
+    .battle_hand_img {
+      width: 135px;
+      height: 110px;
+      margin-top: 30px;
+    }
+
+    /*手を選ぶところ*/
+    .player {
+      position: absolute;
+      margin-right: auto;
+      margin-left: auto;
+      height: 400px;
+      left: 140px;
+      top: 58%;
+    }
+
+    .player_imgs {
+      background: #0062ff;
+      width: 700px;
+      height: 160px;
+      left: 250px;
+      padding: 0.25em 0.5em;
+      /*角の丸み*/
+      border-radius: 10px;
+      box-shadow: inset 0 3px 0 rgba(255, 255, 255, 0.6), inset 0 -2px 0 rgba(0, 0, 0, 0.05);
+      font-weight: bold;
+      /*線の色*/
+      border: solid 3px #3e3eb9;
+    }
+
+    .janken_img {
+      width: 225px;
+      display: inline-block;
+      margin-top: 20px;
+    }
+
+    /*結果表示*/
+    #judgment {
+      position: absolute;
+      margin-right: auto;
+      margin-left: auto;
+      border-radius: 10px;
+      background: #ffe100;
+      box-shadow: inset 0 3px 0 rgba(255, 255, 255, 0.6), inset 0 -2px 0 rgba(0, 0, 0, 0.05);
+      font-weight: bold;
+      border: solid 3px #b9b93e;
+      font-size: 24px;
+      width: 500px;
+      padding: 0.25em 0.5em;
+      left: 250px;
+      top: 50%;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="wrap">
+
+    <header>
+      <h1 class="title">▽じゃんけんバトル△</h1>
+    </header>
+
+    <main>
+      <div class="battle">
+        <img src="display.png" width="600px" height="250px"></img>
+        <div class="battle_hand">
+          <div>あなた<br><span class="battle_hand_contents" id="player_hands"></span></div>
+          <div>コンピュータの出した手は？<br><span class="battle_hand_contents" id="pc_hands"></span></div>
+        </div>
+      </div>
+
+      <div id="judgment">\ じゃーんけーん /</div>
+
+      <div class="player">
+        <p>↓ 何を出すかクリック ↓</p>
+        <div class="player_imgs">
+          <img src="gu.png" width="90px" height="120px" class="janken_img" id="gu_btn" data-value="1"></img>
+          <img src="choki.png" width="100px" height="120px" class="janken_img" id="cho_btn" data-value="2"></img>
+          <img src="pa.png" width="100px" height="120px" class="janken_img" id="par_btn" data-value="3"></img>
+        </div>
+      </div>
+    </main>
+
+  </div>
+
+  <script>
+    //じゃんけん用のSCRIPTを書いてください
+
+    //それぞれの手にマウスが置かれたら、その後マウスが離れたら
+    $("#gu_btn,#cho_btn,#par_btn").hover(
+      function () {
+        $(this).css("background-color", "#99c0ff");
+      },
+      function () {
+        $(this).css("background-color", "");
+      }
+    );
+
+    //じゃんけんの手をそれぞれ決めて表示、勝敗も表示させる
+    $("#gu_btn,#cho_btn,#par_btn").on("click", function () {
+      //勝敗
+      let draw = "あいこ！";
+      let win = "あなたの勝ち！";
+      let lose = "あなたの負け！";
+
+      //player_handに1(グー)、2(チョキ)、3(パー)を当てはめる
+      let player_hand = $(this).attr("data-value");
+      console.log(player_hand);
+
+      //cpu_handに1から3の数字をランダムに入れる
+      //cpu_handの数字が1ならグー、2ならチョキ、3ならパーとする
+      const cpu_hand = Math.ceil(Math.random() * 3);
+
+      /*コンピュータ：グー*/
+      if (cpu_hand == 1) {
+        $("#pc_hands").html("<img src='gu_br.png' width='60px' class='battle_hand_img'></img>");
+
+        if (player_hand == 1) { //プレイヤー：グー
+          playrer_gu();
+          $("#judgment").html(draw);
+
+        } else if (player_hand == 2) { //プレイヤー：チョキ
+          playrer_choki();
+          $("#judgment").html(lose);
+
+        } else { //プレイヤー：パー
+          playrer_pa();
+          $("#judgment").html(win);
+        }
+
+        /*コンピュータ：チョキ*/
+      } else if (cpu_hand == 2) {
+        $("#pc_hands").html("<img src='choki_br.png' width='40px' class='battle_hand_img'></img>");
+
+        if (player_hand == 1) { //プレイヤー：グー
+          playrer_gu();
+          $("#judgment").html(win);
+
+        } else if (player_hand == 2) { //プレイヤー：チョキ
+          playrer_choki();
+          $("#judgment").html(draw);
+
+        } else { //プレイヤー：パー
+          playrer_pa();
+          $("#judgment").html(lose);
+        }
+
+        /*コンピュータ：パー*/
+      } else {
+        $("#pc_hands").html("<img src='pa_br.png' width='60px' class='battle_hand_img'></img>");
+
+        if (player_hand == 1) { //プレイヤー：グー
+          playrer_gu();
+          $("#judgment").html(lose);
+
+        } else if (player_hand == 2) { //プレイヤー：チョキ
+          playrer_choki();
+          $("#judgment").html(win);
+
+        } else { //プレイヤー：パー
+          playrer_pa();
+          $("#judgment").html(draw);
+        }
+      }
+    });
+
+    //プレイヤーが選んだ手を表示する関数
+    function playrer_gu() {
+      $("#player_hands").html("<img src='gu.png' width = '135px' height = '130px' class='battle_hand_img'></img>");
+    }
+
+    function playrer_choki() {
+      $("#player_hands").html("<img src='choki.png' width = '135px'height = '130px' class='battle_hand_img'></img>");
+    }
+
+    function playrer_pa() {
+      $("#player_hands").html("<img src='pa.png' width = '135px'height = '130px' class='battle_hand_img'></img>");
+    }
+
+  </script>
+</body>
+
+</html>
