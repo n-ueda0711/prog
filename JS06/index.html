@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="utf-8" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@500&display=swap" rel="stylesheet" />
+    <script src="js/jquery-2.1.3.min.js"></script>
+    <link rel="stylesheet" href="index.css">
+    <title>myMemoPad</title>
+</head>
+
+<body>
+    <div class="wrap">
+        <div class="bg_pattern Paper"></div>
+        <h1 class="title">
+            声でお手軽メモ
+            <div class="audio icon"></div>
+        </h1>
+        <div class="btn">
+            <button id="speak">音声ガイド</button>
+        </div>
+        <p class="guide">
+            ◎キーボードからも入力ができます<br />
+            ◎話すときに少し時間をおくと改行されます
+        </p>
+        <div class="btn">
+            <button onclick="StartStop()" id="voice" class="center-box"></button>
+            <button onclick="Clipboard()" class="center-box">
+                コピー
+            </button>
+            <button onclick="textClear()" class="center-box">
+                クリア
+            </button>
+        </div>
+
+        <input type="text" id="key" class="titlebox" placeholder="タイトルを入力してください">
+        <textarea id="result-div" class="textbox" placeholder="メモしたいことを話す、もしくは入力してください"></textarea>
+
+        <div class="btn">
+            <button id="save" class="center-box">メモを保存 ↓</button>
+            <button id="clear" class="center-box">メモを削除 ↓</button>
+        </div>
+        <div class="savebox">
+            <table id="list">
+                <!-- ここに追加データが挿入される -->
+            </table>
+        </div>
+    </div>
+
+    <script>
+
+        /*データの保存、取得について(localStorage)*/
+
+        //1.Save クリックイベント
+        $("#save").on("click", function () {
+            //valueからデータを取ってきて変数に格納
+            const key = $("#key").val();
+            const value = $("#result-div").val();
+            localStorage.setItem(key, value);
+
+            //一覧表示に追加
+            const html = '<tr><th>' + key + '</th><br><td>' + value + '</td></tr>';
+            $("#list").append(html);
+            //alert("OK");
+        });
+
+        //2.clear クリックイベント
+        $("#clear").on("click", function () {
+            localStorage.clear();
+            $("#list").empty();
+        });
+
+        //3.ページ読み込みでlocalStorageからデータを取得：保存データ取得表示
+        for (let i = 0; i < localStorage.length; i++) {
+            //key(何番)でkey名を取得
+            const key = localStorage.key(i);
+            const value = localStorage.getItem(key);
+
+            //一覧表示
+            const html = '<tr><th noWrap>' + key + '</th><td align=left>' + value + '</td></tr>';
+
+            $("#list").append(html);
+        }
+
+        /*音声ガイド*/
+
+        // 発話機能をインスタンス化
+        let msg = new SpeechSynthesisUtterance();
+        let voices = window.speechSynthesis.getVoices();
+
+        //speakという関数にtextを代入する
+        function speak(text) {
+            // 以下オプション設定
+            msg.volume = 1.0; // 音量 min 0 ~ max 1
+            msg.rate = 1.4; // 速度 min 0.5 ~ max 3.5
+            msg.pitch = 0.9; // 音程 min 0 ~ max 2
+
+            msg.text = text; // 話す内容
+            msg.lang = "ja-JP"; // en-US or ja-JP
+            // msg.lang = 'en-US'; // en-US or ja-JP
+
+            // 発話実行 html5の標準機能
+            speechSynthesis.speak(msg);
+        }
+
+        // 終了時の処理
+        msg.onend = function (event) {
+            console.log("End: ", text);
+        };
+
+        let text =
+            "タイトルを入力し、声でメモボタンを押してから、マイクに向かってメモしたいことを話しましょう。コピーボタンを押すとクリップボードに内容をコピーすることができ、クリアボタンを押すと内容を全て消すことができます。メモを保存したいときは、メモを保存ボタンを押してください。メモを削除ボタンで保存したメモを全て削除することができます。";
+
+        let button = document.querySelector("#speak");
+        button.onclick = function () {
+            speak(text);
+        };
+
+        /*音声認識*/
+
+        // 音声認識機能(Chrome固有)で音声が認識される
+        let rec = new webkitSpeechRecognition(); //chromeはこれがなくても動く
+        rec.continuous = true;
+        rec.interimResults = true;
+        rec.lang = "ja-JP";
+        stop();
+
+        function stop() {
+            start = false;
+            voice.innerHTML = "声でメモ";
+        }
+
+        function StartStop() {
+            if (start == true) {
+                rec.stop();
+                stop();
+            } else {
+                rec.start();
+                start = true;
+                voice.innerHTML = "停止";
+            }
+        }
+        rec.onstart = function () {
+            console.log("on start"); //録音が始まったら
+        };
+
+        rec.onend = function () {
+            console.log("on end"); //録音終わったら
+        };
+
+        rec.onresult = function (e) {
+            //読み込んだテキストを認識
+            for (let i = e.resultIndex; i < e.results.length; i++) {
+                if (e.results[i].isFinal) {
+                    //認識が終わったらisFinalがtrueになる
+                    /*let text = e.results[i][0].transcript + "\n";
+                      resultDiv.innerHTML = text;
+                      ↑これだと毎度文章が更新されてしまう
+                    */
+                    document.getElementById("result-div").value +=
+                        e.results[i][0].transcript + "\n";
+                    //transcriptという属性のところに音声を理解した部分が代入される
+                }
+            }
+        };
+
+        /*メモをクリップボードにコピー*/
+
+        function Clipboard() {
+            var copyTarget = document.getElementById("result-div");
+            copyTarget.select(); //copyTarget内のすべてのテキストを選択する
+            document.execCommand("Copy"); //クリップボードにコピーする
+        }
+
+        /*テキストボックスのクリア*/
+
+        function textClear() {
+            document.getElementById("key").value = ""; //タイトルエリアの要素を全部消す
+            document.getElementById("result-div").value = ""; //テキストエリアの要素を全部消す
+        }
+
+    </script>
+</body>
+
+</html>
