@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.1.9/p5.min.js"></script>
+    <title>関数で円を描く</title>
+    <style>
+        body {
+            background: #f2f2f2;
+            text-align: center;
+        }
+
+        #canvas {
+            margin-top: 50px;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>関数で円を描く</h1>
+    <div id="canvas"></div>
+
+    <script>
+        function setup() {
+            let canvas = createCanvas(800, 500);
+            canvas.parent("canvas");
+            background(0);
+        }
+
+        function draw() {
+            background(0);
+            create_circle(random(width), random(height));
+        }
+
+        function create_circle(a, b) {
+            noStroke();
+            drawingContext.shadowBlur = 20;
+            drawingContext.shadowColor = "#ffffff";
+            fill(random(255), random(255), random(255));
+            circle(a, b, 80);
+        }
+    </script>
+</body>
+
+</html>
