@@ -1,0 +1,136 @@
+body{
+    width:70%;
+    text-align: center;
+    margin: 0 auto;
+    color: #332b05;
+    background: #e6f1ff;
+}
+
+.wrap{
+    margin-top: 0px;
+    background: #fff;
+    height: 100vh;
+}
+
+h1{
+    margin:0px auto 10px auto;
+    padding: 15px 0px;
+    font-size: 30px;
+    letter-spacing: 3px;
+}
+
+p{
+    font-weight: bold;
+}
+
+.navi{
+    margin-left: 10px;
+    margin-bottom: 20px;
+    min-width: 130px;
+    height: 40px;
+    color: #fff;
+    padding: 5px 10px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    display: inline-block;
+    outline: none;
+    border-radius: 20px;
+    border: 2px solid #0075ff;
+    background: #0075ff;
+    letter-spacing: 1px;
+    font-size: 16px;
+}
+
+.navi:hover{
+    background-color: #fff;
+    color: #332b05;
+}
+
+.tool{
+    margin-top: 10px;
+    height: 30px;
+    display: -webkit-flex;
+    display: flex;
+    -webkit-justify-content: center;
+    justify-content: center;
+    -webkit-align-items: center;
+    align-items: center;
+}
+
+.tool :nth-child(2){
+    margin-left: 32px;
+}
+
+.tool :last-child{
+    margin-left: 38px;  
+}
+
+.tool_icon{
+    display: -webkit-flex;
+    display: flex;
+    -webkit-justify-content: center;
+    justify-content: center;
+    -webkit-align-items: center;
+    align-items: center;
+}
+
+.tool_icon :nth-child(2){
+    margin-left: 15px;
+}
+
+.tool_icon :nth-child(3){
+    margin-left: 30px;
+}
+
+.tool_icon :last-child{
+    margin-left: 10px;
+}
+
+.tool_btn {
+    width: auto;
+    height: 40px;
+    padding: 6px 11px 5px 2px;
+    margin:0;
+    background:none;
+    border:0;
+    font-size:0;
+    line-height:0;
+    overflow:visible;
+    cursor:pointer;  
+    background: #fff;
+    transition: all 0.3s ease;
+    position: relative;
+    display: inline-block;
+    outline: none;
+    border-radius: 5px;
+    border: none;
+    box-shadow: 0 3px 1px -2px #ccc, 0 2px 2px 0 #ccc, 0 1px 5px 0 #ccc;    
+}
+
+.tool_btn:hover{
+    background: #aad1ff;
+}
+
+.tool_btn:active {
+    box-shadow: 0 4px 2px -3px #ccc, 0 4px 5px 1px #ccc, 0 2px 7px 1px #ccc;
+}
+
+#col{
+    background: #fff;
+}
+
+.tool_range{
+    display: -webkit-flex;
+    display: flex;
+    -webkit-justify-content: center;
+    justify-content: center;
+    -webkit-align-items: center;
+    align-items: center;
+    height: 2px;        
+}
+
+#drowarea{
+    margin:0 auto;
+}

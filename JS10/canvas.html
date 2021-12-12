@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>canvas_base.html</title>
+    <link rel="stylesheet" href="canvas.css">
+</head>
+
+<body>
+    <div class = "wrap">
+        <section>
+            <h1>お絵描きツール</h1>
+            <nav>
+                <button class="navi" id="save_btn">絵を保存する</button>
+                <button class="navi" id="clear_btn">消す</button>    
+            </nav>
+            
+            <canvas id="drowarea" width="600" height="350" style="border:3px solid #1f2a37;"></canvas>
+            
+            <div class="tool">
+                <p>ペン</p>
+                <p>消しゴム</p>
+                <p>色を変える</p>
+            </div>
+
+            <div class="tool_icon">
+                <button class="tool_btn">
+                    <img src="pen.png"  id="pen" onClick="tool(1)" width="40px" height="30px"></img>
+                </button>
+
+                <button class="tool_btn">
+                    <img src="keshi.png" id="keshi" onClick="tool(2)" width="40px" height="30px"></img>
+                </button>
+
+                <!-- 線の色を変更するHTML要素 -->
+                <img src="pallet.png" width="30px" height="30px"></img>
+                <p> →</p>
+                <input type="color" id="col">
+            </div>
+
+            <!-- 線の太さを変更するHTML要素 -->
+            <p>線の太さを変える</p>
+            <div class="tool_range">
+                <p>・</p>
+                <input type="range" id="size" min="1" max="100" value="50"  background="#ffd819">
+                <p>●</p>
+            </div>
+        </section>    
+    </div>
+
+
+    <script src="js/jquery-2.1.3.min.js"></script>
+    <script>
+    /*初期化(変数letで宣言)*/
+        let canvas_mouse_event = false; //スイッチ [ true=線を引く, false=線は引かない ]  ＊＊＊
+        let oldX = 0;                   //１つ前の座標を代入するための変数
+        let oldY = 0;                   //１つ前の座標を代入するための変数
+        let bold_line = 3;              //ラインの太さをここで指定 スライダーで動かした値を入れる
+        let color = "#ccc";             //ラインの色をここで指定 カラーピッカーの値を入れる
+
+    /*色の変更処理*/
+        $("#col").on("change",function(){
+            color = $(this).val(); //選んだ色が格納される
+        });
+
+    /*線の太さの変更処理*/
+        $("#size").on("change",function(){
+            bold_line = $(this).val();
+        });
+
+    /*ペンと消しゴムどちらが選ばれているか判断*/
+        let pen = document.getElementById('pen');
+        let keshi = document.getElementById('keshi');
+ 
+        function tool(btnNum){
+            if (btnNum == 1){        //クリックされボタンが鉛筆だったら
+                ctx.globalCompositeOperation = 'source-over';
+                pen.className = 'active';
+                keshi.className = '';
+            }
+            else if (btnNum == 2){   //クリックされボタンが消しゴムだったら
+                ctx.globalCompositeOperation = 'destination-out';
+                pen.className = '';
+                keshi.className = 'active';
+            }
+        }
+
+    /*CanvasElement 描画するための準備！*/
+        const can = $("#drowarea")[0]; 
+        const ctx = can.getContext("2d"); 
+        reset_canvas();
+
+     //背景を白くする代わりに白でrectを描画する
+        function reset_canvas(){
+            ctx.fillStyle = "#fff";
+            ctx.fillRect(0,0, can.width, can.height);
+        }
+
+    /*mousedown：フラグをTrue*/
+        $(can).on("mousedown", function(e){ //eにmousedownした時の情報が入る
+            oldX = e.offsetX;               //MOUSEDOWNしたX横座標取得
+            oldY = e.offsetY;               //MOUSEDOWN Y高さ座標取得
+            canvas_mouse_event=true;        //スイッチを入れる
+        });
+
+
+    /*mousemove：フラグがTrueだったら描く ※e：イベント引数取得*/
+        $(can).on("mousemove", function(e){
+            if(canvas_mouse_event==true){   //スイッチが入っている間
+                const px = e.offsetX;       //移動した座標を取る
+                const py = e.offsetY;
+                ctx.strokeStyle = color;    //線の色
+                ctx.lineWidth = bold_line;  //線の太さ
+                ctx.beginPath();            //初期化
+                ctx.lineJoin= "round";      //線の先を丸に
+                ctx.lineCap = "round";      //線の先を丸に
+                ctx.moveTo(oldX, oldY);     //線の開始場所
+                ctx.lineTo(px, py);         //終了場所
+                ctx.stroke();               //線を引く
+            
+                oldX = px;                  //開始地点を新しくする
+                oldY = py;                  //新しい座標を古い座標に入れ替える
+            }
+        });
+
+    /*mouseup：フラグをfalse*/
+        $(can).on("mouseup", function(){
+            canvas_mouse_event=false;
+        });
+
+    /*マウスがキャンバスから出たら*/
+        $(can).on("mouseover", function(){
+            canvas_mouse_event=false;
+        });
+
+    /*保存する（保存ボタンの処理）*/
+        $("#save_btn").on("click", function(){
+            saveCanvas("drowarea");
+            alert("キャンバスが保存されました");
+        })
+
+        function saveCanvas(canvas_id){
+            var canvas = document.getElementById(canvas_id);
+            var a = document.createElement('a');            //アンカータグを生成
+            a.href = canvas.toDataURL('image/jpeg', 0.85);  //canvasをJPEG変換し、そのBase64文字列をhrefへセット
+            a.download = 'download.jpg';                    //ダウンロード時のファイル名を指定
+            a.click();                                      //クリックイベントを発生
+            reset_canvas();
+        }
+
+    /*キャンバスの絵を消す（消すボタンの処理）*/
+        $("#clear_btn").on("click", function(){
+            //アラートでokを押されたら実行
+                if(confirm('キャンバスの内容をすべて削除します')){
+                    ctx.beginPath();
+                    ctx.clearRect(0, 0, can.width, can.height);
+                    reset_canvas();
+                }
+        })
+    </script>
+</body>
+
+</html>
