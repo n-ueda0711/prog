@@ -1,0 +1,119 @@
+*{
+    font-family: 'Sawarabi Gothic', sans-serif;
+    text-align: center;
+    overflow: hidden;
+}
+
+body{
+    width:70%;
+    text-align: center;
+    margin: 0 auto;
+    color: #332b05;
+    background: #e6f1ff;
+    background-image: url("img/index.jpg"); /* 画像 */
+    background-size: cover;               /* 全画面 */
+    background-attachment: fixed;         /* 固定 */
+    background-position: center center;   /* 縦横中央 */
+ 
+}
+
+.wrap{
+    margin-top: 0px;
+    background: rgba(255, 255, 255,0.5);
+    height: 100vh;
+}
+
+h1{
+    margin: 0 auto;
+    text-align: center;
+    font-size: 80px;
+    letter-spacing: 5px;
+    line-height:0.95em;
+	font-weight:bold;
+	text-shadow: 0.02em 0.02em 0.02em rgba(0,0,0,1);
+    padding-top: 30%;
+    padding-right: 5%;
+    transform: rotate(-10deg);
+}
+
+h2{
+    margin: 10px auto;
+    font-size: 18px;
+    letter-spacing: 0.8px;
+    padding-top: 8%;
+
+}
+
+.click1{
+    position: absolute;
+    top: 2%;
+    left: 21.8%;
+    font-size: 20px;
+}
+
+.charm1{
+    position: absolute;
+    top: 15%;
+    left: 23%;
+    color: #0075ff;
+}
+
+#drawing {
+    position: absolute;
+    top: 10%;
+    left: 17%;
+    display: inline-block;
+    text-decoration: none;
+    font-size: 20px;
+    background: rgba(0, 117, 255, 0.502);
+    color: #332b05;
+    width: 200px;
+    height: 200px;
+    line-height: 120px;
+    border-radius: 50%;
+    text-align: center;
+    overflow: hidden;
+    transition: .4s;
+    line-height: 200px;
+}
+  
+#drawing:hover {
+    background: #0075ff;
+}
+
+.click2{
+    position: absolute;
+    bottom: 30%;
+    right: 21.8%;
+    font-size: 20px;
+}
+
+.charm2{
+    position: absolute;
+    bottom: 19%;
+    right: 22.8%;
+    color: #332b05;
+}
+
+#coloring {
+    position: absolute;
+    bottom: 3%;
+    right: 17%;
+    display: inline-block;
+    text-decoration: none;
+    font-size: 20px;
+    background: rgba(255, 206, 0, 0.5);
+    color: #332b05;
+    width: 200px;
+    height: 200px;
+    line-height: 120px;
+    border-radius: 50%;
+    text-align: center;
+    overflow: hidden;
+    transition: .4s;
+    line-height: 200px;
+}
+  
+#coloring:hover {
+    background: #ffce00;
+}

@@ -1,0 +1,291 @@
+<!--ローカルファイルとして開くと、画像とキャンバス間をオリジン間で利用できないようでキャンバスが保存できません。（https://developer.mozilla.org/ja/docs/Web/HTML/CORS_enabled_image）
+    localhost（サーバ経由）で実行すると、問題なく動作します -->
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>Let's Draw!! --ぬりえ</title>
+    <link rel="stylesheet" href="coloring.css">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Sawarabi+Gothic&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <div class="wrap">
+        <section>
+            <h1>ぬりえ</h1>
+            <nav>
+                <button class="navi" id="save_btn">絵を保存する</button>
+                <button class="navi" id="clear_btn">消す</button>
+            </nav>
+
+            <div class="announce">
+                ＊保存した絵の利用に関しては<a href="https://www.nurieyasan.com/rule/" target="_blank"
+                    rel="noopener noreferrer">こちら</a>をご一読ください＊
+            </div>
+
+            <div class="canvas-wrap">
+                <!-- 合成結果用のcanvas -->
+                <canvas id="concat" width="600" height="350"></canvas>
+                <canvas id="board" width="600" height="350"></canvas>
+                <canvas id="drowarea" width="600" height="350" style="border:3px solid #1f2a37;"></canvas>
+            </div>
+
+            <div class="tool">
+                <p id="now1">ペン</p>
+                <p id="now2">消しゴム</p>
+                <p>色を変える</p>
+            </div>
+
+            <div class="tool_icon">
+                <button class="tool_btn">
+                    <img src="img/pen.png" id="pen" onClick="tool(1)" width="40px" height="30px"></img>
+                </button>
+
+                <button class="tool_btn">
+                    <img src="img/keshi.png" id="keshi" onClick="tool(2)" width="40px" height="30px"></img>
+                </button>
+
+                <!-- 線の色を変更するHTML要素 -->
+                <img src="img/pallet.png" width="30px" height="30px"></img>
+                <p> →</p>
+                <input type="color" id="col">
+            </div>
+
+            <div class=slider>
+                <p class="slider_announce">線の太さを変える</p>
+                <p class="slider_announce">線の濃さを変える</p>
+            </div>
+
+            <div class=slider>
+                <!-- 線の太さを変更するHTML要素 -->
+                <div class="tool_range">
+                    細<p>・</p>
+                    <input type="range" id="size" min="1" max="100" value="50" background="#ffd819">
+                    <p style="font-size: 20px;">●</p>太
+                </div>
+                <!-- 線の濃さを変更するHTML要素 -->
+                <div class="tool_range">
+                    薄<p style="font-size: 20px; color:rgba(0,0,0,0.1);">●</p>
+                    <input type="range" id="alpha" min="10" max="80" value="80" background="#ffd819">
+                    <p style="font-size: 20px; color:rgba(0,0,0,1);">●</p>濃
+                </div>
+            </div>
+
+            <!-- モーダルウィンドウ 参考：(https://webdesignday.jp/inspiration/technique/css/4680/)-->
+            <div id="content">
+                <a class="js-modal-open" href=""></a>
+            </div>
+            <div class="modal js-modal">
+                <div class="modal__bg js-modal-close"></div>
+                <div class="modal__content">
+                    <p>＊ただいまキャンバスを保存しています＊</p>
+                    <img src="img/load.png" width="300px" height="200px"></img>
+                </div>
+                <!--modal__inner-->
+            </div>
+            <!--modal-->
+        </section>
+        <div class="menu">
+            <label for="lebel1">Menu</label>
+            <input type="checkbox" id="lebel1" />
+            <div class="hidden_show">
+                <!--非表示ここから-->
+                <a href="index.html" class="home">ホーム</a>
+                <a href="drawing.html" class="nuri">お絵描き</a>
+                <!--ここまで-->
+            </div>
+        </div>
+
+    </div>
+
+
+    <script src="js/jquery-2.1.3.min.js"></script>
+    <script>
+        $(content).hide; //モーダルを非表示
+
+        /*初期化(変数letで宣言)*/
+        let canvas_mouse_event = false; //スイッチ [ true=線を引く, false=線は引かない ]  ＊＊＊
+        let oldX = 0;                   //１つ前の座標を代入するための変数
+        let oldY = 0;                   //１つ前の座標を代入するための変数
+        let bold_line = 3;              //ラインの太さをここで指定 スライダーで動かした値を入れる
+        let color_alpha = 1.0;          //ラインの色の透明度をここで指定,スライダーで動かした値を入れる
+        let color = "#000";             //ラインの色をここで指定 カラーピッカーの値を入れる
+
+        /*色の変更処理*/
+        $("#col").on("change", function () {
+            color = $(this).val(); //選んだ色が格納される
+            console.log("色変更:" + color);
+        });
+
+        /*線の太さの変更処理*/
+        $("#size").on("change", function () {
+            bold_line = $(this).val();
+        });
+
+        /*線の濃さの変更処理*/
+        $("#alpha").on("change", function () {
+            color_alpha = $(this).val() / 100;
+            console.log("色の濃さ:" + color_alpha);
+        });
+
+        /*ペンと消しゴムどちらが選ばれているか判断*/
+        let pen = document.getElementById('pen');
+        let keshi = document.getElementById('keshi');
+
+        function tool(btnNum) {
+            if (btnNum == 1) {        //クリックされボタンが鉛筆だったら
+                select_now = 1;
+                ctx.globalCompositeOperation = 'source-over';
+                pen.className = 'active';
+                keshi.className = '';
+                $("#now1").css({
+                    color: "#ffce00"
+                });
+
+                $("#now2").css({
+                    color: "#000000"
+                });
+            }
+            else if (btnNum == 2) {   //クリックされボタンが消しゴムだったら
+                select_now = 2;
+                ctx.globalCompositeOperation = 'destination-out';
+                pen.className = '';
+                keshi.className = 'active';
+                $("#now1").css({
+                    color: "#000000"
+                });
+
+                $("#now2").css({
+                    color: "#ffce00"
+                });
+            }
+        }
+
+        /*ぬりえ画像をキャンバスに載せる*/
+        window.onload = function () {
+            create_ImageCanvas();
+        };
+
+        function create_ImageCanvas() {
+            // canvas準備
+            const board = document.getElementById('board');
+            const ctx = board.getContext("2d");
+
+            // 画像読み込み
+            const chara = new Image();
+            chara.src = "img/nuri.png";  // 画像のURLを指定
+            chara.onload = () => {
+                ctx.drawImage(chara, 10, 10, 590, 340);
+            };
+        }
+
+        /*CanvasElement 描画するための準備！*/
+        const can = $("#drowarea")[0];
+        const ctx = can.getContext("2d");
+        reset_canvas();
+
+        /*背景を消す代わりに画像キャンバスを描画する*/
+        function reset_canvas() {
+            window.onload = function () {
+                create_ImageCanvas();
+            };
+        }
+
+        /*mousedown：フラグをTrue*/
+        $(can).on("mousedown", function (e) { //eにmousedownした時の情報が入る
+            oldX = e.offsetX;                 //MOUSEDOWNしたX横座標取得
+            oldY = e.offsetY;                 //MOUSEDOWN Y高さ座標取得
+            canvas_mouse_event = true;        //スイッチを入れる
+        });
+
+        /*mousemove：フラグがTrueだったら描く ※e：イベント引数取得*/
+        $(can).on("mousemove", function (e) {
+            if (canvas_mouse_event == true) {   //スイッチが入っている間
+                const px = e.offsetX;           //移動した座標を取る
+                const py = e.offsetY;
+                ctx.fillStyle = color;
+                ctx.strokeStyle = color;        //線の色
+                ctx.globalAlpha = color_alpha;  //線の透明度
+                ctx.lineWidth = bold_line;      //線の太さ
+                ctx.beginPath();                //初期化
+                ctx.lineJoin = "round";          //線の先を丸に
+                ctx.lineCap = "round";          //線の先を丸に
+                ctx.moveTo(oldX, oldY);         //線の開始場所
+                ctx.lineTo(px, py);             //終了場所
+                ctx.stroke();                   //線を引く
+
+                oldX = px;                      //開始地点を新しくする
+                oldY = py;                      //新しい座標を古い座標に入れ替える
+            }
+        });
+
+        /*mouseup：フラグをfalse*/
+        $(can).on("mouseup", function () {
+            canvas_mouse_event = false;
+        });
+
+        /*マウスがキャンバスから出たら*/
+        $(can).on("mouseover", function () {
+            canvas_mouse_event = false;
+        });
+
+        /*保存する（保存ボタンの処理）*/
+        document.querySelector("#save_btn").addEventListener("click", function () {
+            $(function () {
+                $('.js-modal').fadeIn();
+                return false;
+            });
+            concatCanvas("#concat", ["#board", "#drowarea"]);
+            setTimeout(function () {
+                saveCanvas("concat");
+                $('.js-modal').fadeOut();
+                alert("キャンバスが保存されました！");
+                return false;
+            }, 2000);
+        });
+
+        /*キャンバスを合成する 参考：(https://miku3.net/html5/canvas-concat/)*/
+        async function concatCanvas(base, asset) {
+            const canvas = document.querySelector(base);
+            const ctx = canvas.getContext("2d");
+
+            for (let i = 0; i < asset.length; i++) {
+                const image1 = await getImagefromCanvas(asset[i]);
+                ctx.drawImage(image1, 0, 0, 600, 350);
+            }
+        }
+
+        function getImagefromCanvas(id) {
+            return new Promise((resolve, reject) => {
+                const image = new Image();
+                const ctx = document.querySelector(id).getContext("2d");
+                image.onload = () => resolve(image);
+                image.onerror = (e) => reject(e);
+                image.src = ctx.canvas.toDataURL();
+            });
+        }
+
+        function saveCanvas(canvas_id) {
+            let canvas = document.getElementById(canvas_id);
+            let a = document.createElement('a');            //アンカータグを生成
+            a.href = canvas.toDataURL('image/jpeg', 0.85);  //canvasをJPEG変換し、そのBase64文字列をhrefへセット
+            a.download = 'download.jpg';                    //ダウンロード時のファイル名を指定
+            a.click();                                      //クリックイベントを発生
+            reset_canvas();
+        }
+
+        /*キャンバスの絵を消す（消すボタンの処理）*/
+        $("#clear_btn").on("click", function () {
+            //アラートでokを押されたら実行
+            if (confirm('キャンバスの内容をすべて削除します')) {
+                ctx.beginPath();
+                ctx.clearRect(0, 0, can.width, can.height);
+                reset_canvas();
+            }
+        })
+    </script>
+</body>
+
+</html>
